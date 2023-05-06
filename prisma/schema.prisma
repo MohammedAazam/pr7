@@ -11,3 +11,33 @@ datasource db {
 }
 
 
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  posts     Post[]
+  comments  Comment[]
+}
+
+model Post {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    Int
+  comments    Comment[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Comment {
+  id          Int      @id @default(autoincrement())
+  content     String
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    Int
+  post        Post     @relation(fields: [postId], references: [id])
+  postId      Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

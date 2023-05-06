@@ -12,9 +12,6 @@ const generateUsers = async () => {
   const users = [];
   for (let i = 0; i < NUM_USERS; i++) {
     users.push({
-      username: faker.internet.userName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(),
     });
   }
   await prisma.user.createMany({ data: users });

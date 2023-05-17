@@ -9,13 +9,20 @@ async function main() {
   await client.patient.deleteMany();
   await client.donated_history.deleteMany();
 
-const generateUsers = async () => {
-  const users = [];
-  for (let i = 0; i < NUM_USERS; i++) {
-    users.push({
-      username: faker.internet.userName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(),
+  for (let i = 0; i < 10; i++) {
+    const user = await client.user.create({
+      data:{
+        u_id: faker.datatype.number(),
+        name: faker.name.fullName(),
+        password: faker.internet.password(),
+        blood_group: faker.helpers.arrayElement(['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-', 'AB-']),
+        gender: faker.helpers.arrayElement(['Male', 'Female']),
+        email: faker.internet.email(),
+        age: parseInt(faker.random.numeric(2)),
+        date_of_birth: faker.date.past(),
+        ph_no: faker.phone.number("+91 ##### #####"),
+        location: faker.address.city(),
+      }
     });
   }
 

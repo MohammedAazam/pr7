@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,34 +7,66 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  email     String   @unique
-  password  String
-  posts     Post[]
-  comments  Comment[]
+model user {
+  u_id              Int               @id @default(autoincrement())
+  password        String            @unique
+  name            String
+  blood_group     String
+  gender          String
+  email           String
+  age             Int
+  date_of_birth   DateTime
+  ph_no           String
+  location        String
+  donated_history donated_history[]
 }
 
-model Post {
-  id          Int      @id @default(autoincrement())
-  title       String
-  content     String
-  author      User     @relation(fields: [authorId], references: [id])
-  authorId    Int
-  comments    Comment[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model donation_camp {
+  id                  BigInt  @id @default(autoincrement())
+  name                String?
+  email               String? @db.VarChar
+  ph_no               BigInt?
+  location            String?
+  permission_letter   String?
+  associated_hospital String?
 }
 
-model Comment {
-  id          Int      @id @default(autoincrement())
-  content     String
-  author      User     @relation(fields: [authorId], references: [id])
-  authorId    Int
-  post        Post     @relation(fields: [postId], references: [id])
-  postId      Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model donated_history {
+  id                BigInt    @id @default(autoincrement())
+  donor_id          Int?
+  patient_id        BigInt?
+  donated_time_date DateTime? @db.Timestamp(6)
+  user              user?     @relation(fields: [donor_id], references: [u_id])
+  patient           patient?  @relation(fields: [patient_id], references: [p_id])
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model patient {
+  p_id              BigInt            @id @default(autoincrement())
+  password        String?           @db.VarChar
+  name            String?
+  blood_group     String?
+  gender          String?
+  email           String?           @db.VarChar
+  age             Int?              @db.SmallInt
+  dob             DateTime?         @db.Date
+  ph_no           String?
+  location        String?
+  req_donation    Boolean?
+  medical_history String?
+  donated_history donated_history[]
+}
+
+enum donation_interest{
+  interested_id
+  user_id
+  camp_id
+  donating_type
+}
+
+enum status{
+  pending
+  recieved
 }

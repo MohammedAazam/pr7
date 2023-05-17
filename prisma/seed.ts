@@ -1,63 +1,111 @@
-
 import { PrismaClient } from "@prisma/client";
-import faker from "@fakerjs/faker";
+import { faker } from "@faker-js/faker";
 
-const prisma = new PrismaClient();
+const client = new PrismaClient();
 
-const NUM_USERS = 10;
-const NUM_POSTS_PER_USER = 3;
-const NUM_COMMENTS_PER_POST = 5;
+async function main() {
+  await client.user.deleteMany();
+  await client.donation_camp.deleteMany();
+  await client.patient.deleteMany();
+  await client.donated_history.deleteMany();
 
-const generateUsers = async () => {
-  const users = [];
-  for (let i = 0; i < NUM_USERS; i++) {
-    users.push({
-      username: faker.internet.userName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(),
+  for (let i = 0; i < 10; i++) {
+    const user = await client.user.create({
+      data:{
+        u_id: faker.datatype.number(),
+        name: faker.name.fullName(),
+        password: faker.internet.password(),
+        blood_group: faker.helpers.arrayElement(['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-', 'AB-']),
+        gender: faker.helpers.arrayElement(['Male', 'Female']),
+        email: faker.internet.email(),
+        age: parseInt(faker.random.numeric(2)),
+        date_of_birth: faker.date.past(),
+        ph_no: faker.phone.number("+91 ##### #####"),
+        location: faker.address.city(),
+      }
     });
   }
-  await prisma.user.createMany({ data: users });
-};
 
-const generatePosts = async () => {
-  const users = await prisma.user.findMany();
-  const posts = [];
-  for (let i = 0; i < users.length; i++) {
-    const user = users[i];
-    for (let j = 0; j < NUM_POSTS_PER_USER; j++) {
-      posts.push({
-        title: faker.lorem.sentence(),
-        content: faker.lorem.paragraphs(),
-        authorId: user.id,
-      });
-    }
+  for (let i = 0; i < 10; i++) {
+    const donationCamp = await client.donation_camp.create({
+      data: {
+        name: faker.random.words(),
+        email: faker.internet.email(),
+        ph_no: parseInt(faker.phone.number("+91 ##### #####")),
+        location: faker.address.city(),
+        permission_letter: faker.random.words(),
+        associated_hospital: faker.random.words(),
+      },
+    });
   }
-  await prisma.post.createMany({ data: posts });
-};
 
-const generateComments = async () => {
-  const users = await prisma.user.findMany();
-  const posts = await prisma.post.findMany();
-  const comments = [];
-  for (let i = 0; i < posts.length; i++) {
-    const post = posts[i];
-    for (let j = 0; j < NUM_COMMENTS_PER_POST; j++) {
-      const user = users[Math.floor(Math.random() * users.length)];
-      comments.push({
-        content: faker.lorem.sentences(),
-        authorId: user.id,
-        postId: post.id,
-      });
-    }
+  for (let i = 0; i < 10; i++) {
+    const patient = await client.patient.create({
+      data: {
+        p_id: faker.datatype.bigInt(),
+        name: faker.name.fullName(),
+        password: faker.internet.password(),
+        blood_group: faker.helpers.arrayElement(['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-', 'AB-']),
+        gender: faker.helpers.arrayElement(['Male', 'Female']),
+        email: faker.internet.email(),
+        age: parseInt(faker.random.numeric(2)),
+        dob: faker.date.past(),
+        ph_no: faker.phone.number("+91 ##### #####"),
+        location: faker.address.city(),
+        req_donation: faker.datatype.boolean(),
+        medical_history: faker.lorem.paragraph(),
+      },
+    });
   }
-  await prisma.comment.createMany({ data: comments });
-};
+
+  for (let i = 0; i < 10; i++) {
+    const donated_history = await client.donated_history.create({
+      data: {
+        donated_time_date: faker.date.past(),
+        user:{
+          create: {
+            u_id: faker.datatype.number(),
+            name: faker.name.fullName(),
+            email: faker.internet.email(),
+            age:  parseInt(faker.random.numeric(2)),
+            date_of_birth: faker.date.past(),
+            ph_no: faker.phone.number("+91 ##### #####"),
+            location: faker.address.city(),
+            password: faker.internet.password(),
+            blood_group: faker.helpers.arrayElement(['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-', 'AB-']),
+            gender: faker.helpers.arrayElement(['Male', 'Female']),
+          },
+        },
+        patient: {
+          create: {
+            p_id: faker.datatype.bigInt(),
+            name: faker.name.fullName(),
+        password: faker.internet.password(),
+        blood_group: faker.helpers.arrayElement(['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-', 'AB-']),
+        gender: faker.helpers.arrayElement(['Male', 'Female']),
+        email: faker.internet.email(),
+        age: parseInt(faker.random.numeric(2)),
+        dob: faker.date.past(),
+        ph_no: faker.phone.number("+91 ##### #####"),
+        location: faker.address.city(),
+        req_donation: faker.datatype.boolean(),
+        medical_history: faker.lorem.paragraph(),
+          },
+        },
+      },
+    });
+
+  }
+}
 
 (async () => {
-  await generateUsers();
-  await generatePosts();
-  await generateComments();
-  console.log("Seed data generated!");
-  await prisma.$disconnect();
+  try {
+    await client.$connect();
+    await main();
+    console.log("Seed data generated!");
+  } catch (error) {
+    console.error("Error generating seed data:", error);
+  } finally {
+    await client.$disconnect();
+  }
 })();
